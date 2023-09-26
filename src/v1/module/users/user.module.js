@@ -1,9 +1,10 @@
 const UserModel = require("../../database/models/user.schema");
-
+// Create user in DB
 const create = async (user) => {
-  return await UserModel.create(user);
+  const userDoc = await UserModel.create(user);
+  return userDoc;
 };
-
+// Create user from DB
 const findOne = async (query) => {
   return await UserModel.findOne(query);
 };
