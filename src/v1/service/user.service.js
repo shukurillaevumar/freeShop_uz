@@ -15,6 +15,13 @@ const register = async (user) => {
   const token = generateToken(userDoc._id);
   return token;
 };
+
+const login = async (user) => {
+  const token = await generateToken(user.id);
+  return token;
+};
+
 module.exports = {
   register,
+  login,
 };

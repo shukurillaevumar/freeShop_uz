@@ -1,9 +1,11 @@
 const express = require("express");
 const v1UserRouter = require("./src/v1/routes/user.router");
+const v1ProductRouter = require("./src/v1/routes/product.router");
 const app = express();
 const dbConnect = require("./src/v1/database/db.connections");
 
 app.use("/api/v1/users", v1UserRouter);
+app.use("/api/v1/products", v1ProductRouter);
 app.use(express.json());
 
 const PORT = 3000;
