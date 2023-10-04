@@ -5,6 +5,6 @@ const v1ProductController = require("../controllers/products.controller");
 
 router.use(bodyParser.json());
 
-router.post("/create", (req, res) => v1ProductController.create(req, res));
+router.post("/", (req, res) => v1ProductController.create(req, res));
 
 module.exports = router;

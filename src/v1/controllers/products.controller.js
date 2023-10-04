@@ -1,46 +1,48 @@
-const v1ProductService = require("../service/products.service");
-const ProductModule = require("../module/products/products.module");
+const mongoose = require("mongoose");
+const { getObjectWith3Lang } = require("../../helpers/validator");
+const productService = require("../service/products.service");
 
 const create = async (req, res) => {
-  const data = await validateCreateInput(req, res);
-  const product = {
-    category: data.category,
-    price: data.price,
-    name: data.name,
-    SKU: data.SKU,
-    title: data.title,
-    desc: data.desc,
-    manifacturer_id: data.manifacturer_id,
-  };
-
-  const token = await v1ProductService.create(product);
-  return res.status(201).send({ status: "OK", authToken: token });
+  const product = await validateCreateInput(req, res);
+  const newProduct = productService.create(product);
+  return newProduct;
 };
 
 const validateCreateInput = async (req, res) => {
   const resultData = {};
-  const { category, price, name, SKU, title, desc, manifacturer_id } = req.body;
+  const {
+    category,
+    price,
+    name,
+    SKU,
+    title,
+    desc,
+    manifacturer_id,
+    discount_id,
+  } = req.body;
 
   //Check category
   if (!category) {
     throw new Error("Category is not found");
   }
+  if (!mongoose.isValidObjectId(category))
+    throw new Error("Category is not valid");
   resultData.category = category;
   //Check price
   if (!price) {
     throw new Error("Price is not found");
   }
   resultData.price = price;
-  //Check name
+  //Check name with regex
   if (!name) {
     throw new Error("Name is not found");
   }
-  const product = await ProductModule.findOne({ name: name });
-
-  if (!product) {
-    throw new Error("Product has been already created");
-  }
   resultData.name = name;
+  // const product = await ProductModule.findOne({ name: name });
+
+  // if (product) {
+  //   throw new Error("Product has been already created");
+  // }
   //Check SKU
   if (!SKU) {
     throw new Error("SKU is not found");
@@ -50,17 +52,29 @@ const validateCreateInput = async (req, res) => {
   if (!title) {
     throw new Error("Title is not found");
   }
+  if (!getObjectWith3Lang(title)) {
+    throw new Error("Title is not valid");
+  }
   resultData.title = title;
-  //Check description
+  //Check description with regex
   if (!desc) {
     throw new Error("Description is not found");
   }
   resultData.desc = desc;
   //Check manifacturer_id
-  if (!manifacturer_id) {
-    throw new Error("Manifacturer_id is not found");
+  if (manifacturer_id) {
+    if (!mongoose.isValidObjectId(manifacturer_id)) {
+      throw new Error("Manifacturer_id is not valid");
+    }
+    resultData.manifacturer_id = manifacturer_id;
   }
-  resultData.manifacturer_id = manifacturer_id;
+  //Check discount_id
+  if (discount_id) {
+    if (!mongoose.isValidObjectId(discount_id)) {
+      throw new Error("Discount_id is not valid");
+    }
+    resultData.discount_id = discount_id;
+  }
 
   return resultData;
 };
