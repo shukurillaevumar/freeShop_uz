@@ -4,8 +4,38 @@ const productService = require("../service/products.service");
 
 const create = async (req, res) => {
   const product = await validateCreateInput(req, res);
-  const newProduct = productService.create(product);
-  return newProduct;
+  const newProduct = await productService.create(product);
+  return res.json(newProduct);
+};
+
+const getById = async (req, res) => {
+  const productId = req.params.id;
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new Error("ProductId is not valid");
+  }
+  const product = await productService.getById(productId);
+  if (!product) {
+    throw new Error("Product is not found");
+  }
+  return res.json(product);
+};
+
+const getByPagination = async (req, res) => {
+  const { page, size } = req.query;
+  const products = await productService.getByPagination(page, size);
+  return res.json(products);
+};
+
+const deleteById = async () => {
+  const productId = req.params.id;
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new Error("ProductId is not valid");
+  }
+  const product = await productService.deleteById(productId);
+  if (!product) {
+    throw new Error("Product is not found");
+  }
+  return res.json(product);
 };
 
 const validateCreateInput = async (req, res) => {
@@ -81,4 +111,7 @@ const validateCreateInput = async (req, res) => {
 
 module.exports = {
   create,
+  getById,
+  getByPagination,
+  deleteById,
 };
