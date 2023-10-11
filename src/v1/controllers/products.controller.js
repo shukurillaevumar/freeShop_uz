@@ -26,7 +26,7 @@ const getByPagination = async (req, res) => {
   return res.json(products);
 };
 
-const deleteById = async () => {
+const deleteById = async (req, res) => {
   const productId = req.params.id;
   if (!mongoose.isValidObjectId(productId)) {
     throw new Error("ProductId is not valid");
@@ -35,7 +35,7 @@ const deleteById = async () => {
   if (!product) {
     throw new Error("Product is not found");
   }
-  return res.json(product);
+  return res.json({ status: "Deleted" });
 };
 
 const validateCreateInput = async (req, res) => {

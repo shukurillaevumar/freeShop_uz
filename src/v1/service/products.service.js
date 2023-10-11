@@ -21,7 +21,7 @@ const getByPagination = async (page, size) => {
   return await ProductModule.getByPagination(page, size);
 };
 
-const deleteById = async () => {
+const deleteById = async (product_id) => {
   return await ProductModule.deleteById(product_id);
 };
 
