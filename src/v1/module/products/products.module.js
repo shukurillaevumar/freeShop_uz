@@ -26,10 +26,18 @@ const deleteById = async (product_id) => {
   return productDoc;
 };
 
+const update = async (id, data) => {
+  const productDoc = await ProductModel.findByIdAndUpdate(id, data, {
+    new: true,
+  });
+  return productDoc;
+};
+
 module.exports = {
   create,
   findOne,
   getById,
   getByPagination,
   deleteById,
+  update,
 };

@@ -1,41 +1,82 @@
 const mongoose = require("mongoose");
 const { getObjectWith3Lang } = require("../../helpers/validator");
 const productService = require("../service/products.service");
+const handleError = require("../../helpers/error.service");
 
 const create = async (req, res) => {
-  const product = await validateCreateInput(req, res);
-  const newProduct = await productService.create(product);
-  return res.json(newProduct);
+  try {
+    //check payload
+    const product = await validateCreateInput(req, res);
+    //create product
+    const newProduct = await productService.create(product);
+    //return product
+    return res.json(newProduct);
+  } catch (err) {
+    res.json(handleError(err.message, 400, err.name));
+  }
 };
 
 const getById = async (req, res) => {
   const productId = req.params.id;
   if (!mongoose.isValidObjectId(productId)) {
-    throw new Error("ProductId is not valid");
+    return res.json(handleError("ProductId is not valid", 500, { productId }));
   }
-  const product = await productService.getById(productId);
-  if (!product) {
-    throw new Error("Product is not found");
+  try {
+    const product = await productService.getById(productId);
+    if (!product) {
+      return res.json(handleError("Product is not found", 500, {}));
+    }
+    return res.json(product);
+  } catch (err) {
+    return res.json(handleError(err.message, 500, err.name));
   }
-  return res.json(product);
 };
 
 const getByPagination = async (req, res) => {
   const { page, size } = req.query;
-  const products = await productService.getByPagination(page, size);
-  return res.json(products);
+  try {
+    const products = await productService.getByPagination(page, size);
+    return res.json(products);
+  } catch (err) {
+    res.json(handleError(err.message, 500, err.name));
+  }
 };
 
 const deleteById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    if (!mongoose.isValidObjectId(productId)) {
+      throw new Error("ProductId is not valid");
+    }
+    const product = await productService.deleteById(productId);
+    if (!product) {
+      throw new Error("Product is not found");
+    }
+    return res.json({
+      productId: productId,
+      status: "Product successfully deleted",
+    });
+  } catch (err) {
+    res.json(handleError(err.message, 500, err.name));
+  }
+};
+
+const update = async (req, res) => {
   const productId = req.params.id;
   if (!mongoose.isValidObjectId(productId)) {
-    throw new Error("ProductId is not valid");
+    return res.json(handleError("ProductId is not valid", 500, { productId }));
   }
-  const product = await productService.deleteById(productId);
-  if (!product) {
-    throw new Error("Product is not found");
+  try {
+    const product = await productService.getById(productId);
+    if (!product) {
+      return res.json(handleError("Product is not found", 500, {}));
+    }
+    const data = validateUpdateParams(req);
+    const updatedProduct = await productService.update(productId, data);
+    return res.json(updatedProduct);
+  } catch (err) {
+    return res.json(handleError(err.message, 500, err.name));
   }
-  return res.json({ status: "Deleted" });
 };
 
 const validateCreateInput = async (req, res) => {
@@ -109,9 +150,63 @@ const validateCreateInput = async (req, res) => {
   return resultData;
 };
 
+const validateUpdateParams = (req) => {
+  const {
+    title,
+    name,
+    SKU,
+    status,
+    desc,
+    category,
+    price,
+    manifacturer_id,
+    discount_id,
+  } = req.body;
+
+  const updateData = {};
+
+  if (title) {
+    if (!getObjectWith3Lang(title)) {
+      throw new Error("Title is not valid");
+    }
+    updateData.title = title;
+  }
+  if (name) updateData.name = name;
+  if (SKU) updateData.SKU = SKU;
+  if (status) updateData.status = status;
+  if (desc) {
+    if (!getObjectWith3Lang(title)) {
+      throw new Error("Description is not valid");
+    }
+    updateData.desc = desc;
+  }
+  if (category) {
+    if (!mongoose.isValidObjectId(category)) {
+      throw new Error("Category is not valid");
+    }
+    updateData.category = category;
+  }
+  if (price) updateData.price = price;
+  if (manifacturer_id) {
+    if (!mongoose.isValidObjectId(manifacturer_id)) {
+      throw new Error("Manifacturer_id is not valid");
+    }
+    updateData.manifacturer_id = manifacturer_id;
+  }
+  if (discount_id) {
+    if (!mongoose.isValidObjectId(discount_id)) {
+      throw new Error("Discount_id is not valid");
+    }
+    updateData.discount_id = discount_id;
+  }
+
+  return updateData;
+};
+
 module.exports = {
   create,
   getById,
   getByPagination,
   deleteById,
+  update,
 };

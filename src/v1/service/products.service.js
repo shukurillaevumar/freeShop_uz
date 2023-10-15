@@ -25,9 +25,14 @@ const deleteById = async (product_id) => {
   return await ProductModule.deleteById(product_id);
 };
 
+const update = async (product_id, updateData) => {
+  return await ProductModule.update(product_id, updateData);
+};
+
 module.exports = {
   create,
   getById,
   getByPagination,
   deleteById,
+  update,
 };
