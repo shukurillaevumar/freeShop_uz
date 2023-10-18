@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { getObjectWith3Lang } = require("../../helpers/validator");
 const productService = require("../service/products.service");
+const productModule = require("../module/products/products.module");
 const handleError = require("../../helpers/error.service");
 
 const create = async (req, res) => {
@@ -13,6 +14,19 @@ const create = async (req, res) => {
     return res.json(newProduct);
   } catch (err) {
     res.json(handleError(err.message, 400, err.name));
+  }
+};
+
+const search = async (req, res) => {
+  const { searchText } = req.body;
+  if (!searchText) {
+    return res.json({ data: [] });
+  }
+  try {
+    const result = await productModule.search(searchText);
+    return res.json({ data: result });
+  } catch (err) {
+    return res.json(handleError(err.message, 500, err.name));
   }
 };
 
@@ -209,4 +223,5 @@ module.exports = {
   getByPagination,
   deleteById,
   update,
+  search,
 };
