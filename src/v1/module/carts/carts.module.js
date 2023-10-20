@@ -11,11 +11,17 @@ const update = async (id, data) => {
   return cartDoc;
 };
 const getById = async (cart_id) => {
-  const CartDoc = await cartModel.findById(cart_id);
+  const CartDoc = await cartModel.findOne({ _id: cart_id, status: "CREATED" });
   return CartDoc;
 };
 const deleteById = async (cart_id) => {
-  const CartDoc = await cartModel.findByIdAndDelete(cart_id);
+  const CartDoc = await cartModel.updateOne(
+    { _id: cart_id, status: "CREATED" },
+    {
+      status: "DELETED",
+    },
+    { new: true }
+  );
   return CartDoc;
 };
 

@@ -18,18 +18,11 @@ const create = async (req, res) => {
   }
 };
 const update = async (req, res) => {
-  const cartId = req.params.id;
-  if (!mongoose.isValidObjectId(cartId)) {
-    return res.json(handleError("ProductId is not valid", 500, { cartId }));
-  }
   try {
-    const cart = await cartService.getById(cartId);
-    if (!cart) {
-      return res.json(handleError("Product is not found", 500, {}));
-    }
-    const data = validateUpdateParams(req);
-    const updatedCart = await cartService.update(cartId, data);
-    return res.json(updatedCart);
+    validateUpdateParams(req);
+    const { products } = req.body;
+    const cart = await cartService.update(products);
+    res.json(cart);
   } catch (err) {
     return res.json(handleError(err.message, 500, err.name));
   }
@@ -40,9 +33,9 @@ const getById = async (req, res) => {
     return res.json(handleError("CartId is not valid", 500, { CartId }));
   }
   try {
-    const cart = await cartService.getById(CartId);
+    const cart = await cartsModule.getById(CartId);
     if (!cart) {
-      return res.json(handleError("Cart is not found", 500, {}));
+      return res.json(handleError("Cart is not found", 404, getById.name));
     }
     return res.json(cart);
   } catch (err) {
@@ -53,15 +46,15 @@ const deleteById = async (req, res) => {
   try {
     const cartId = req.params.id;
     if (!mongoose.isValidObjectId(cartId)) {
-      throw new Error("CartId is not valid");
+      return res.json(handleError("CartId is not valid", 400, { cartId }));
     }
-    const cart = await cartService.deleteById(cartId);
-    if (!cart) {
-      throw new Error("Cart is not found");
+    const result = await cartsModule.deleteById(cartId);
+    if (result.modifiedCount === 0) {
+      return res.json(handleError("Cart is not found", 404, deleteById.name));
     }
     return res.json({
-      cartId: cartId,
-      status: "Cart successfully deleted",
+      status: "Deleted",
+      cartId,
     });
   } catch (err) {
     res.json(handleError(err.message, 500, err.name));
@@ -82,7 +75,7 @@ const validateCreateInputParams = (userId, products) => {
     if (!mongoose.isValidObjectId(product.productId)) {
       throw new Error("productId is not valid");
     }
-    if (product.quantity.length >= 1) {
+    if (product.quantity < 1) {
       throw new Error("Quantity is not valid");
     }
     if (!product.productId || !product.quantity) {
@@ -93,19 +86,25 @@ const validateCreateInputParams = (userId, products) => {
   });
 };
 const validateUpdateParams = (req) => {
-  const { productId, quantity } = req.body;
-
-  const updateData = {};
-  if (!mongoose.isValidObjectId(productId)) {
-    throw new Error("CartId is not valid");
+  const { products } = req.body;
+  if (!Array.isArray(products)) {
+    throw new Error("Products is not valid (It should be type of Array)");
   }
-  updateData.productId = productId;
 
-  if (quantity <= 0) {
-    throw new Error("quantity is not valid");
+  if (products.length === 0) {
+    throw new Error("Products' field is empty: Add more products to update");
   }
-  updateData.quantity = quantity;
-  return updateData;
+  products.forEach((product) => {
+    if (!product.id || !product.quantity) {
+      throw new Error("Each product should include id and quantity fields");
+    }
+    if (!mongoose.isValidObjectId(product.id)) {
+      throw new Error("Id is not valid");
+    }
+    if (product.quantity < 0) {
+      throw new Error("Quantity should not be lower than zero");
+    }
+  });
 };
 module.exports = {
   create,
