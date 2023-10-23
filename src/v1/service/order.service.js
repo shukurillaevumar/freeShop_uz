@@ -4,9 +4,12 @@ const update = async (orders) => {
   return await orders;
 };
 
-const create = async (order) => {
+const create = async (userId, orders, amount, address) => {
   const orderForDb = {
-    ...order,
+    userId,
+    orders,
+    amount,
+    address,
     status: "PENDING",
     created_at: Date.now(),
   };

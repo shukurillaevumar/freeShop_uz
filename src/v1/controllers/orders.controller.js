@@ -5,11 +5,11 @@ const ordersService = require("../service/order.service");
 
 const create = async (req, res) => {
   try {
-    const { userId, orders, amount } = req.body;
+    const { userId, orders, amount, address } = req.body;
 
-    validateCreateInputParams(userId, orders, amount);
+    validateCreateInputParams(userId, orders, amount, address);
 
-    const order = await ordersModule.create(userId, orders, amount);
+    const order = await ordersService.create(userId, orders, amount, address);
 
     return res.json({ data: order });
   } catch (err) {
@@ -62,7 +62,7 @@ const deleteById = async (req, res) => {
   }
 };
 
-const validateCreateInputParams = (userId, orders, amount) => {
+const validateCreateInputParams = (userId, orders, amount, address) => {
   if (!mongoose.isValidObjectId(userId)) {
     throw new Error("userId is not valid");
   }
@@ -75,6 +75,9 @@ const validateCreateInputParams = (userId, orders, amount) => {
 
   if (!amount) {
     throw new Error("amount is not defined");
+  }
+  if (!address) {
+    throw new Error("address is not defined");
   }
 
   orders.forEach((order) => {
