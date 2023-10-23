@@ -1,10 +1,7 @@
 const orderModel = require("../../database/models/order.schema");
-const create = async (userId, orders) => {
-  return await cartModel.create({
-    user_id: userId,
-    orders,
-    createdAt: Date.now(),
-  });
+const create = async (order) => {
+  const orderDoc = await orderModel.create(order);
+  return orderDoc;
 };
 const update = async (id, data) => {
   const orderDoc = await orderModel.findByIdAndUpdate(id, data, { new: true });

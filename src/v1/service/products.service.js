@@ -4,7 +4,7 @@ const create = async (product) => {
   // Prepare data for DB
   const productForDb = {
     ...product,
-    status: "active",
+    status: "PENDING",
     discount_id: null,
     created_at: Date.now(),
   };

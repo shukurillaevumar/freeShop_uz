@@ -5,11 +5,11 @@ const ordersService = require("../service/order.service");
 
 const create = async (req, res) => {
   try {
-    const { userId, orders } = req.body;
+    const { userId, orders, amount } = req.body;
 
-    validateCreateInputParams(userId, orders);
+    validateCreateInputParams(userId, orders, amount);
 
-    const order = await ordersModule.order(userId, orders);
+    const order = await ordersModule.create(userId, orders, amount);
 
     return res.json({ data: order });
   } catch (err) {
@@ -62,7 +62,7 @@ const deleteById = async (req, res) => {
   }
 };
 
-const validateCreateInputParams = (userId, orders) => {
+const validateCreateInputParams = (userId, orders, amount) => {
   if (!mongoose.isValidObjectId(userId)) {
     throw new Error("userId is not valid");
   }
@@ -72,16 +72,21 @@ const validateCreateInputParams = (userId, orders) => {
   if (orders.length === 0) {
     throw new Error("order list is empty");
   }
-  orders.forEach((orders) => {
-    if (!mongoose.isValidObjectId(orders.orderId)) {
+
+  if (!amount) {
+    throw new Error("amount is not defined");
+  }
+
+  orders.forEach((order) => {
+    if (!mongoose.isValidObjectId(order.productId)) {
       throw new Error("orderId is not valid");
     }
-    if (orders.quantity < 1) {
+    if (order.quantity < 1) {
       throw new Error("Quantity is not valid");
     }
-    if (!orders.orderId || !orders.quantity) {
+    if (!order.productId || !order.quantity) {
       throw new Error(
-        "Each product should include orderId and quantity fields"
+        "Each product should include productId and quantity fields"
       );
     }
   });
@@ -95,14 +100,14 @@ const validateUpdateParams = (req) => {
   if (orders.length === 0) {
     throw new Error("Orders' field is empty: Add more Orders to update");
   }
-  orders.forEach((orders) => {
-    if (!orders.id || !orders.quantity) {
+  orders.forEach((order) => {
+    if (!order.id || !order.quantity) {
       throw new Error("Each order should include id and quantity fields");
     }
-    if (!mongoose.isValidObjectId(orders.id)) {
+    if (!mongoose.isValidObjectId(order.id)) {
       throw new Error("Id is not valid");
     }
-    if (orders.quantity < 0) {
+    if (order.quantity < 0) {
       throw new Error("Quantity should not be lower than zero");
     }
   });

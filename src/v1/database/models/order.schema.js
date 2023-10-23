@@ -5,9 +5,7 @@ const orderSchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["CREATED", "PAID", "DELETED"],
       required: true,
-      default: "CREATED",
     },
     user_id: {
       type: Schema.Types.ObjectId,
@@ -17,11 +15,19 @@ const orderSchema = new mongoose.Schema(
       type: Array,
       required: true,
     },
-    createdAt: {
+    amount: {
       type: Number,
       required: true,
     },
-    updatedAt: {
+    address: {
+      type: String,
+      required: true,
+    },
+    created_at: {
+      type: Number,
+      required: true,
+    },
+    updated_at: {
       type: Number,
       required: true,
       default: 0,
