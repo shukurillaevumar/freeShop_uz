@@ -4,22 +4,25 @@ const create = async (order) => {
   return orderDoc;
 };
 
-const update = async (id, data) => {
-  const orderDoc = await orderModel.findByIdAndUpdate(id, data, { new: true });
+const update = async (updateOrders) => {
+  const orderDoc = await orderModel.updateOne(
+    { status: "CREATED" },
+    { orders: updateOrders },
+    { new: true }
+  );
   return orderDoc;
 };
 
 const getById = async (order_id) => {
   const orderDoc = await orderModel.findOne({
     _id: order_id,
-    status: "CREATED",
   });
   return orderDoc;
 };
 
 const deleteById = async (order_id) => {
   const orderDoc = await orderModel.updateOne(
-    { _id: order_id, status: "CREATED" },
+    { _id: order_id },
     {
       status: "DELETED",
     },

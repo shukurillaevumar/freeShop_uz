@@ -20,19 +20,28 @@ const update = async (req, res) => {
   try {
     validateUpdateParams(req);
     const { orders } = req.body;
-    const order = await ordersService.update(orders);
-    res.json(order);
+    const result = await ordersService.update(orders);
+    if (result.matchedCount === 0) {
+      return res.json(handleError("Order is not found", 404, update.name));
+    }
+    if (result.modifiedCount === 0) {
+      return res.json(
+        handleError("Order has been already updated", 404, update.name)
+      );
+    }
+    return res.json({ status: "Updated" });
   } catch (err) {
     return res.json(handleError(err.message, 500, err.name));
   }
 };
 const getById = async (req, res) => {
   const OrderId = req.params.id;
+  console.log(req);
   if (!mongoose.isValidObjectId(OrderId)) {
     return res.json(handleError("OrderId is not valid", 500, { OrderId }));
   }
   try {
-    const order = await cartsModule.getById(OrderId);
+    const order = await ordersModule.getById(OrderId);
     if (!order) {
       return res.json(handleError("order is not found", 404, getById.name));
     }
@@ -44,14 +53,14 @@ const getById = async (req, res) => {
 const deleteById = async (req, res) => {
   try {
     const Orderid = req.params.id;
+
     if (!mongoose.isValidObjectId(Orderid)) {
-      return res.json(handleError("Orderid is not valid", 400, { Orderid }));
+      return res.json(handleError("OrderId is not valid", 400, { Orderid }));
     }
     const result = await ordersModule.deleteById(Orderid);
+
     if (result.modifiedCount === 0) {
-      return res.json(
-        handleError("Orderid is not found", 404, deleteById.name)
-      );
+      return res.json(handleError("Order is not found", 404, deleteById.name));
     }
     return res.json({
       status: "Deleted",
@@ -96,15 +105,17 @@ const validateCreateInputParams = (userId, orders, amount, address) => {
 };
 const validateUpdateParams = (req) => {
   const { orders } = req.body;
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    throw new Error("OrderId is not valid");
+  }
   if (!Array.isArray(orders)) {
     throw new Error("Orders is not valid (It should be type of Array)");
   }
-
   if (orders.length === 0) {
     throw new Error("Orders' field is empty: Add more Orders to update");
   }
   orders.forEach((order) => {
-    if (!order.id || !order.quantity) {
+    if (!order.id || (!order.quantity && order.quantity !== 0)) {
       throw new Error("Each order should include id and quantity fields");
     }
     if (!mongoose.isValidObjectId(order.id)) {
@@ -112,6 +123,9 @@ const validateUpdateParams = (req) => {
     }
     if (order.quantity < 0) {
       throw new Error("Quantity should not be lower than zero");
+    }
+    if (!product.deleted && product.deleted !== false) {
+      throw new Error("deleted field should be defined");
     }
   });
 };

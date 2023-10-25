@@ -5,7 +5,9 @@ const orderSchema = new mongoose.Schema(
   {
     status: {
       type: String,
+      enum: ["CREATED", "PAID", "PENDING", "SUCCESS", "DELETED"],
       required: true,
+      default: "PENDING",
     },
     userId: {
       type: Schema.Types.ObjectId,

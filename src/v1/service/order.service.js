@@ -1,7 +1,10 @@
 const ordersModule = require("../module/orders/orders.module");
 
 const update = async (orders) => {
-  return await orders;
+  const result = orders.filter((product) => {
+    return product.deleted === false;
+  });
+  return await ordersModule.update(result);
 };
 
 const create = async (userId, orders, amount, address) => {

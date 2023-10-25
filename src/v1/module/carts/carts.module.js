@@ -6,9 +6,15 @@ const create = async (userId, products) => {
     createdAt: Date.now(),
   });
 };
-const update = async (id, data) => {
-  const cartDoc = await cartModel.findByIdAndUpdate(id, data, { new: true });
-  return cartDoc;
+const update = async (cartId, updateProducts) => {
+  const CartDoc = await cartModel.updateOne(
+    { _id: cartId, status: "CREATED" },
+    {
+      products: updateProducts,
+    },
+    { new: true }
+  );
+  return CartDoc;
 };
 const getById = async (cart_id) => {
   const CartDoc = await cartModel.findOne({ _id: cart_id, status: "CREATED" });
