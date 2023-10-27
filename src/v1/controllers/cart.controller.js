@@ -1,14 +1,11 @@
 const mongoose = require("mongoose");
 const handleError = require("../../helpers/error.service");
-// const cartsModel = require("../database/models/cart.schema");
 const cartsModule = require("../module/carts/carts.module");
 const cartService = require("../service/cart.service");
 
 const create = async (req, res) => {
   try {
-    //const userId = req.user.id;
     const { userId, products } = req.body;
-
     validateCreateInputParams(userId, products);
 
     const cart = await cartsModule.create(userId, products);
@@ -84,8 +81,8 @@ const validateCreateInputParams = (userId, products) => {
   if (products.length === 0) {
     throw new Error("product list is empty");
   }
-  products.forEach(async (product) => {
-    if (!product.productId || !product.quantity) {
+  products.forEach((product) => {
+    if (!product.productId || (!product.quantity && product.quantity !== 0)) {
       throw new Error(
         "Each product should include productId and quantity fields"
       );
@@ -94,12 +91,8 @@ const validateCreateInputParams = (userId, products) => {
       throw new Error("productId is not valid");
     }
     if (product.quantity < 1) {
-      throw new Error("Quantity is not valid");
+      throw new Error("Quantity should be higer than zero");
     }
-    // const productDoc = await cartsModel.findById(product.productId);
-    // if (!productDoc) {
-    //   throw new Error("ProductId is not defined");
-    // }
   });
 };
 const validateUpdateParams = (req) => {
