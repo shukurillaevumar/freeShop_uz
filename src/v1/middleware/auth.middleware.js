@@ -1,11 +1,39 @@
 const userModule = require("../module/users/user.module");
 const jwt = require("jsonwebtoken");
-const authorize = (req, res, next) => {
-  const token = req.header("Authorization");
-  if (!token) {
+
+const authorize = async (req, res, next) => {
+  const auth = req.header("Authorization");
+  if (!auth) {
     return res.status(401).json({ error: "Authorization token not found" });
   }
+  const [authType, authToken] = auth.split(" ");
+  if (authType !== "Bearer") {
+    return res.status(401).json({ error: "Authorization type is not valid" });
+  }
+  try {
+    const verifiedTokenData = await verifyToken(authToken);
+    const user = await userModule.findOne({
+      _id: verifiedTokenData.id,
+    });
+    if (!user.active) {
+      return res.status(401).json({ error: "User is blocked by Admin" });
+    }
+    req.user = {
+      _id: user._id,
+      role: user.role,
+      active: user.active,
+      user_name: user.user_name,
+    };
+
+    next();
+  } catch (err) {
+    console.log(err.message);
+    return res
+      .status(404)
+      .json({ err: "Authorization is expired, log in again" });
+  }
 };
+
 const authentificate = async (req, res, next) => {
   const { userName, password } = req.body;
   if (!userName || !password) {
@@ -40,7 +68,11 @@ const authentificate = async (req, res, next) => {
 };
 
 const generateToken = async (id) => {
-  return await jwt.sign({ id }, "&+!freePaySecret@#", { expiresIn: "1hr" });
+  return await jwt.sign({ id }, "secret", { expiresIn: "1h" });
+};
+
+const verifyToken = async (token) => {
+  return await jwt.verify(token, "secret");
 };
 
 module.exports = {

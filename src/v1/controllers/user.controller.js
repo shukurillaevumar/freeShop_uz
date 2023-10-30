@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const v1UserService = require("../service/user.service");
 const userValidationRegex = require("../../helpers/validationRegex");
 const userModule = require("../module/users/user.module");
+const handleError = require("../../helpers/error.service");
 
 const register = async (req, res) => {
   try {
@@ -17,19 +18,23 @@ const register = async (req, res) => {
     const token = await v1UserService.register(newUser);
     return res.status(201).send({ status: "OK", authToken: token });
   } catch (err) {
-    console.log(err);
+    return res.json(handleError(err.message, 500, err.name));
   }
 };
 
 const login = async (req, res) => {
-  const data = await validateLoginInput(req, res);
-  const user = {
-    id: data.userId,
-    password: data.password,
-  };
+  try {
+    const data = await validateLoginInput(req, res);
+    const user = {
+      id: data.userId,
+      password: data.password,
+    };
 
-  const token = await v1UserService.login(user);
-  return res.status(201).send({ status: "OK", authToken: token });
+    const token = await v1UserService.login(user);
+    return res.status(201).send({ status: "OK", authToken: token });
+  } catch (err) {
+    return res.json(handleError(err.message, 500, err.name));
+  }
 };
 
 const validateLoginInput = async (req, res) => {
@@ -53,7 +58,7 @@ const validateLoginInput = async (req, res) => {
   const user = await userModule.findOne({ user_name: userName });
 
   if (!user) {
-    throw new Error("User has been already registered");
+    throw new Error("You are not registered in the system");
   }
   resultData.userId = user._id;
 

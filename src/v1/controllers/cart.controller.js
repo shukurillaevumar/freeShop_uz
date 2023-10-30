@@ -4,6 +4,12 @@ const cartsModule = require("../module/carts/carts.module");
 const cartService = require("../service/cart.service");
 
 const create = async (req, res) => {
+  if (req.user.role !== "USER") {
+    return res.status(403).json({
+      status: 403,
+      message: "You are not allowed to use this service",
+    });
+  }
   try {
     const { userId, products } = req.body;
     validateCreateInputParams(userId, products);

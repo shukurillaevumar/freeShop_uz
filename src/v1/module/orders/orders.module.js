@@ -16,7 +16,7 @@ const getById = async (order_id) => {
 
 const deleteById = async (order_id) => {
   const orderDoc = await orderModel.updateOne(
-    { _id: order_id, status: "PENDING" },
+    { _id: order_id },
     {
       status: "DELETED",
     }
